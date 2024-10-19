@@ -1,8 +1,22 @@
-
 import streamlit as st
-
+from dotenv import load_dotenv
+import os
+import openai  # Certifique-se de importar a biblioteca openai
 from utils_openai import retorna_resposta_modelo
 from utils_files import *
+
+# Carrega as variáveis do arquivo .env
+load_dotenv()
+API_KEY = os.getenv("OPENAI_API_KEY")
+
+# Verificação de Depuração
+if API_KEY is None or API_KEY == "":
+    st.error("A chave da API não foi carregada. Verifique o arquivo .env.")
+else:
+    st.info("Chave da API carregada com sucesso.")
+
+# Defina a chave da API diretamente na biblioteca `openai`
+openai.api_key = API_KEY
 
 # INICIALIZAÇÃO ==================================================
 
@@ -15,7 +29,8 @@ def inicializacao():
     if not 'modelo' in st.session_state:
         st.session_state.modelo = 'gpt-3.5-turbo'
     if not 'api_key' in st.session_state:
-        st.session_state.api_key = le_chave()
+        # Usando a chave carregada do arquivo .env
+        st.session_state.api_key = API_KEY
 
 # TABS ==================================================
 
@@ -53,12 +68,8 @@ def tab_configuracoes(tab):
                                      ['gpt-3.5-turbo', 'gpt-4'])
     st.session_state['modelo'] = modelo_escolhido
 
-    chave = tab.text_input('Adicione sua api key',
-                           value=st.session_state['api_key'])
-    if chave != st.session_state['api_key']:
-        st.session_state['api_key'] = chave
-        salva_chave(chave)
-        tab.success('Chave salva com sucesso')
+    # Removendo a entrada da chave de API do código
+    tab.success('Chave de API configurada automaticamente.')
 
 # PÁGINA PRINCIPAL ==================================================
 
@@ -76,13 +87,16 @@ def pagina_principal():
     prompt = st.chat_input('Fale com o chat')
     if prompt:
         if st.session_state['api_key'] == '':
-            st.error('Adicone uma chave de api na aba de configurações')
+            st.error('Adicione uma chave de API na aba de configurações')
         else:
             nova_mensagem = {'role': 'user',
                              'content': prompt}
             chat = st.chat_message(nova_mensagem['role'])
             chat.markdown(nova_mensagem['content'])
             mensagens.append(nova_mensagem)
+
+            # Definindo a chave explicitamente antes da requisição
+            openai.api_key = st.session_state['api_key']
 
             chat = st.chat_message('assistant')
             placeholder = chat.empty()

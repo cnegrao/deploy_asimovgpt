@@ -7,7 +7,13 @@ from utils_files import *
 
 # Carrega as variáveis do arquivo .env
 load_dotenv()
-API_KEY = os.getenv("OPENAI_API_KEY")
+ENV_TYPE = os.getenv("ENV_TYPE", "dev").lower()
+
+# Carregar a chave da API dependendo do ambiente
+if ENV_TYPE == "prod":
+    API_KEY = os.getenv("OPENAI_API_KEY_PROD")
+else:
+    API_KEY = os.getenv("OPENAI_API_KEY")
 
 # Verificação de Depuração
 if API_KEY is None or API_KEY == "":
@@ -36,7 +42,6 @@ def inicializacao():
 
 
 def tab_conversas(tab):
-
     tab.button('➕ Nova conversa',
                on_click=seleciona_conversa,
                args=('', ),
@@ -75,7 +80,6 @@ def tab_configuracoes(tab):
 
 
 def pagina_principal():
-
     mensagens = ler_mensagens(st.session_state['mensagens'])
 
     st.header('🤖 Politx GPT', divider=True)

@@ -5,13 +5,22 @@ import openai  # Certifique-se de importar a biblioteca openai
 from utils_openai import retorna_resposta_modelo
 from utils_files import *
 
-# Carrega as variáveis do arquivo .env
+# Carrega as variáveis do arquivo .env (apenas para desenvolvimento)
 load_dotenv()
-API_KEY = os.getenv("OPENAI_API_KEY")
+ENV_TYPE = os.getenv("ENV_TYPE", "dev").lower()
+
+# Carregar a chave da API dependendo do ambiente
+if ENV_TYPE == "prod":
+    # Em produção, esperamos que a chave da API esteja configurada como uma variável de ambiente
+    API_KEY = os.getenv("OPENAI_API_KEY_PROD")
+else:
+    # Em desenvolvimento, use as variáveis do .env
+    API_KEY = os.getenv("OPENAI_API_KEY")
 
 # Verificação de Depuração
 if API_KEY is None or API_KEY == "":
-    st.error("A chave da API não foi carregada. Verifique o arquivo .env.")
+    st.error(
+        "A chave da API não foi carregada. Verifique o arquivo .env ou as variáveis de ambiente.")
 else:
     st.info("Chave da API carregada com sucesso.")
 
@@ -29,14 +38,13 @@ def inicializacao():
     if not 'modelo' in st.session_state:
         st.session_state.modelo = 'gpt-3.5-turbo'
     if not 'api_key' in st.session_state:
-        # Usando a chave carregada do arquivo .env
+        # Usando a chave carregada do arquivo .env ou variável de ambiente
         st.session_state.api_key = API_KEY
 
 # TABS ==================================================
 
 
 def tab_conversas(tab):
-
     tab.button('➕ Nova conversa',
                on_click=seleciona_conversa,
                args=('', ),
@@ -75,7 +83,6 @@ def tab_configuracoes(tab):
 
 
 def pagina_principal():
-
     mensagens = ler_mensagens(st.session_state['mensagens'])
 
     st.header('🤖 Politx GPT', divider=True)

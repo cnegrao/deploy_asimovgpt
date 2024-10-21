@@ -1,3 +1,4 @@
 .env
 venv/
 configuracoes/
+env_prd.txt
